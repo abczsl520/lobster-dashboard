@@ -3,14 +3,13 @@ let onUpdateCb = null;
 let activityLog = [];
 const MAX_LOG = 200;
 
-// CST timezone offset helper
-function nowCST() {
-  return new Date(Date.now() + 8 * 3600000);
+function localNow() {
+  return new Date();
 }
 
-function todayStartCST() {
-  const d = nowCST();
-  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())).getTime();
+function todayStartLocal() {
+  const d = localNow();
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
 }
 
 function pushState(data) {
@@ -18,8 +17,8 @@ function pushState(data) {
 
   const now = Date.now();
 
-  // Clean activity log: remove entries from before today (CST)
-  const todayMs = todayStartCST();
+  // Clean activity log: remove entries from before today
+  const todayMs = todayStartLocal();
   activityLog = activityLog.filter(a => a.ts >= todayMs);
 
   const sessions = data.sessions.map(s => {
@@ -109,10 +108,10 @@ function pushState(data) {
 }
 
 function addActivity(agent, action, color, channel) {
-  const d = nowCST();
-  const h = String(d.getUTCHours()).padStart(2, '0');
-  const m = String(d.getUTCMinutes()).padStart(2, '0');
-  const sec = String(d.getUTCSeconds()).padStart(2, '0');
+  const d = localNow();
+  const h = String(d.getHours()).padStart(2, '0');
+  const m = String(d.getMinutes()).padStart(2, '0');
+  const sec = String(d.getSeconds()).padStart(2, '0');
   activityLog.unshift({
     time: h + ':' + m + ':' + sec,
     agent, action, color, channel,

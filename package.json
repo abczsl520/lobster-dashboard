@@ -7,6 +7,9 @@
     "start": "node server.js",
     "setup": "cp config.example.json config.json && echo 'Edit config.json with your settings'"
   },
+  "engines": {
+    "node": ">=18"
+  },
   "keywords": ["openclaw", "dashboard", "ai-agents", "monitoring", "websocket", "cyberpunk"],
   "license": "MIT",
   "dependencies": {

@@ -1,20 +1,21 @@
 const { WebSocketServer } = require('ws');
-const url = require('url');
 
 function setupWebSocket(server, validTokens) {
   const wss = new WebSocketServer({ noServer: true });
   const clients = new Set();
 
-  // Auth: check token from query param
+  // Auth: check token from query param or cookie
   server.on('upgrade', (req, socket, head) => {
-    const parsed = url.parse(req.url, true);
+    const baseUrl = 'http://' + (req.headers.host || 'localhost');
+    let parsed;
+    try { parsed = new URL(req.url, baseUrl); } catch { socket.destroy(); return; }
+
     if (parsed.pathname !== '/ws') {
       socket.destroy();
       return;
     }
 
-    // Check auth token from query or cookie
-    let token = parsed.query.token;
+    let token = parsed.searchParams.get('token');
     if (!token && req.headers.cookie) {
       const match = req.headers.cookie.match(/lobster_token=([^;]+)/);
       if (match) token = match[1];

@@ -6,18 +6,18 @@ Real-time cyberpunk monitoring dashboard for [OpenClaw](https://github.com/openc
 
 ## Features
 
-- **Force-directed topology** — D3-style physics simulation with lobster emoji nodes
-- **Real-time WebSocket** — live state updates pushed from OpenClaw gateway
+- **Force-directed topology** — physics simulation with lobster emoji nodes
+- **Real-time WebSocket** — live state updates via push API
 - **Cyberpunk UI** — hex grid particles, scanning lines, glowing edges, data packets
 - **Token consumption** — per-session and aggregate token tracking
 - **Activity feed** — live log of agent status changes and tool usage
-- **Password auth** — cookie-based login with 24h expiry, WebSocket auth
+- **Secure auth** — timing-safe password compare, login rate limiting, cookie auth with 24h expiry
 - **Push API** — external data ingestion with rate limiting and input validation
 
 ## Quick Start
 
 ```bash
-git clone https://github.com/nicepkg/lobster-dashboard.git
+git clone https://github.com/abczsl520/lobster-dashboard.git
 cd lobster-dashboard
 npm install
 cp config.example.json config.json
@@ -34,8 +34,8 @@ Edit `config.json`:
 ```json
 {
   "port": 3870,
-  "basePath": "/lobster",
-  "gateway": { "pollIntervalMs": 5000 },
+  "basePath": "",
+  "gateway": { "mode": "push" },
   "auth": {
     "pushToken": "your_secret_push_token",
     "viewPassword": "your_login_password"
@@ -43,10 +43,15 @@ Edit `config.json`:
 }
 ```
 
-- `port` — server listen port
-- `basePath` — URL prefix when behind a reverse proxy (e.g. `/lobster`). Set to `""` for root.
-- `auth.pushToken` — token for the push API (`X-Push-Token` header)
-- `auth.viewPassword` — password for the web login page
+| Field | Description |
+|-------|-------------|
+| `port` | Server listen port |
+| `basePath` | URL prefix behind a reverse proxy (e.g. `/lobster`). Leave `""` for root. |
+| `gateway.mode` | Currently `push` only — data is pushed via the Push API |
+| `auth.pushToken` | Secret token for the Push API (`X-Push-Token` header) |
+| `auth.viewPassword` | Password for the web login page |
+
+For HTTPS environments, set `"https": true` in config or `LOBSTER_HTTPS=1` env var to enable secure cookies.
 
 ## Push API
 
@@ -90,6 +95,8 @@ curl -s -X POST http://localhost:3870/api/push \
 
 ## Nginx Reverse Proxy
 
+When deploying behind nginx with a sub-path, set `basePath` to match:
+
 ```nginx
 location /lobster/ {
     proxy_pass http://127.0.0.1:3870/;
@@ -101,10 +108,12 @@ location /lobster/ {
 }
 ```
 
+Then set `"basePath": "/lobster"` in config.json.
+
 ## Architecture
 
 ```
-server.js                  ← Express + auth + push API
+server.js                  ← Express + auth + push API + rate limiting
 services/
   ws-broadcaster.js        ← WebSocket server with auth + heartbeat
   gateway-poller.js        ← State management + activity log
@@ -117,9 +126,14 @@ public/
   js/particles.js          ← Hex grid particle background
 ```
 
-## Screenshots
+## Security
 
-> Coming soon — deploy it and see for yourself 🦞
+- Timing-safe password comparison (`crypto.timingSafeEqual`)
+- Login rate limiting (5 attempts per minute per IP)
+- Token set capped at 1000 to prevent memory exhaustion
+- Push API with dedicated token auth + rate limiting (1 req / 3s)
+- WebSocket upgrade requires valid auth token
+- HttpOnly cookies with optional Secure flag
 
 ## License
 

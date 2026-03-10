@@ -18,16 +18,61 @@ const { startPoller, pushState, getLatestState } = require('./services/gateway-p
 const app = express();
 const server = http.createServer(app);
 
+// --- Token management with cap ---
+const MAX_TOKENS = 1000;
 const validTokens = new Set();
 
 function generateToken() {
+  // Evict oldest if at cap (Set iteration order = insertion order)
+  if (validTokens.size >= MAX_TOKENS) {
+    const oldest = validTokens.values().next().value;
+    validTokens.delete(oldest);
+  }
   const token = crypto.randomBytes(24).toString('hex');
   validTokens.add(token);
   setTimeout(() => validTokens.delete(token), 86400000);
   return token;
 }
 
+// --- Timing-safe password compare ---
+function safeCompare(input, secret) {
+  if (typeof input !== 'string' || typeof secret !== 'string') return false;
+  const a = Buffer.from(input);
+  const b = Buffer.from(secret);
+  if (a.length !== b.length) {
+    // Compare against self to keep constant time, then return false
+    crypto.timingSafeEqual(a, a);
+    return false;
+  }
+  return crypto.timingSafeEqual(a, b);
+}
+
+// --- Login rate limiter ---
+const loginAttempts = new Map(); // ip -> { count, resetAt }
+const LOGIN_LIMIT = 5;
+const LOGIN_WINDOW_MS = 60000; // 1 min
+
+function checkLoginRate(ip) {
+  const now = Date.now();
+  const entry = loginAttempts.get(ip);
+  if (!entry || now > entry.resetAt) {
+    loginAttempts.set(ip, { count: 1, resetAt: now + LOGIN_WINDOW_MS });
+    return true;
+  }
+  entry.count++;
+  return entry.count <= LOGIN_LIMIT;
+}
+
+// Cleanup stale entries every 5 min
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, entry] of loginAttempts) {
+    if (now > entry.resetAt) loginAttempts.delete(ip);
+  }
+}, 300000);
+
 const BASE_PATH = config.basePath || '';
+const IS_HTTPS = process.env.LOBSTER_HTTPS === '1' || config.https === true;
 
 // Cookie parser
 app.use((req, res, next) => {
@@ -48,7 +93,7 @@ app.use(express.json({ limit: '2mb' }));
 let lastPushTime = 0;
 app.post('/api/push', (req, res) => {
   const token = req.headers['x-push-token'];
-  if (token !== config.auth.pushToken) return res.status(401).json({ error: 'unauthorized' });
+  if (!safeCompare(token || '', config.auth.pushToken)) return res.status(401).json({ error: 'unauthorized' });
   const now = Date.now();
   if (now - lastPushTime < 3000) return res.status(429).json({ error: 'too fast' });
   lastPushTime = now;
@@ -73,9 +118,15 @@ app.get('/login.html', (req, res) => {
 
 // Login action
 app.post('/login', express.urlencoded({ extended: false }), (req, res) => {
-  if (req.body && req.body.password === config.auth.viewPassword) {
+  const ip = req.ip || req.connection.remoteAddress;
+  if (!checkLoginRate(ip)) {
+    return res.status(429).send('Too many login attempts. Try again later.');
+  }
+  if (req.body && safeCompare(req.body.password || '', config.auth.viewPassword)) {
     const token = generateToken();
-    res.cookie('lobster_token', token, { httpOnly: true, sameSite: 'lax', maxAge: 86400000, path: '/' });
+    const cookieOpts = { httpOnly: true, sameSite: 'lax', maxAge: 86400000, path: '/' };
+    if (IS_HTTPS) cookieOpts.secure = true;
+    res.cookie('lobster_token', token, cookieOpts);
     return res.redirect(BASE_PATH + '/');
   }
   res.redirect(BASE_PATH + '/login.html?error=1');
