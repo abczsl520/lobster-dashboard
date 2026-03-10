@@ -29,6 +29,15 @@
 - Activity feed with status changes and tool usage
 - Auto-reconnect on connection loss
 
+## 📚 Documentation
+
+- [Installation Guide](docs/Installation.md) — Detailed setup instructions
+- [API Reference](docs/API-Reference.md) — Complete API documentation
+- [FAQ](docs/FAQ.md) — Frequently asked questions
+- [CONTRIBUTING](CONTRIBUTING.md) — How to contribute
+- [CHANGELOG](CHANGELOG.md) — Version history
+
+
 🔒 **Security Hardened**
 - Timing-safe password comparison
 - Login rate limiting (5 attempts/min per IP)
