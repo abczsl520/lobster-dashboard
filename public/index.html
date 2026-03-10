@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🦞 Lobster Command Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=16">
+</head>
+<body>
+  <canvas id="particleBg"></canvas>
+  <div class="dashboard">
+    <header class="header">
+      <div class="header-left">
+        <span class="logo">🦞</span>
+        <h1>Lobster Command Center</h1>
+      </div>
+      <div class="header-right">
+        <span class="gateway-status" id="gwStatus">⚡ CONNECTING</span>
+        <span class="stat-badge" id="statActive">🟢 0 ACTIVE</span>
+        <span class="stat-badge" id="statIdle">🟡 0 IDLE</span>
+        <span class="stat-badge" id="statTotal">📊 0 TODAY</span>
+        <span class="stat-badge token-badge" id="statTokens">🪙 0</span>
+        <span class="clock" id="clock"></span>
+      </div>
+    </header>
+
+    <div class="token-bar">
+      <div class="token-stat">
+        <span class="token-label">Total Tokens</span>
+        <span class="token-value" id="tokenTotal">0</span>
+      </div>
+      <div class="token-stat">
+        <span class="token-label">Input</span>
+        <span class="token-value token-in" id="tokenIn">0</span>
+      </div>
+      <div class="token-stat">
+        <span class="token-label">Output</span>
+        <span class="token-value token-out" id="tokenOut">0</span>
+      </div>
+    </div>
+
+    <div class="main-grid">
+      <div class="panel center-panel">
+        <div class="panel-title">REALTIME TOPOLOGY</div>
+        <canvas id="topoCanvas"></canvas>
+      </div>
+
+      <div class="bottom-row">
+        <div class="panel agent-panel">
+          <div class="panel-title">AGENT MATRIX</div>
+          <div id="agentCards" class="agent-cards"></div>
+        </div>
+        <div class="panel feed-panel">
+          <div class="panel-title">LIVE FEED <span id="feedCount" class="feed-count">0</span></div>
+          <div id="liveFeed" class="live-feed"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/particles.js?v=16"></script>
+  <script src="js/topology.js?v=16"></script>
+  <script src="js/app.js?v=16"></script>
+</body>
+</html>

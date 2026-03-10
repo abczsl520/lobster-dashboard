@@ -1,0 +1,11 @@
+{
+  "port": 3870,
+  "basePath": "/lobster",
+  "gateway": {
+    "pollIntervalMs": 5000
+  },
+  "auth": {
+    "pushToken": "change_me_push_token",
+    "viewPassword": "change_me_password"
+  }
+}

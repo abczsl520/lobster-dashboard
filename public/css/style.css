@@ -1,0 +1,485 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #050a15;
+  --panel-bg: rgba(8, 16, 32, 0.92);
+  --border: rgba(0, 200, 255, 0.12);
+  --glow: rgba(0, 200, 255, 0.6);
+  --text: #d0e8ff;
+  --text-dim: #4a6a8a;
+  --accent: #00c8ff;
+  --green: #00ff88;
+  --yellow: #ffb800;
+  --red: #ff3366;
+  --purple: #b44aff;
+  --cyan: #00e5ff;
+}
+
+@font-face {
+  font-family: 'Orbitron';
+  src: url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Orbitron', 'SF Mono', 'Fira Code', monospace;
+  overflow-x: hidden;
+  overflow-y: auto;
+  min-height: 100vh;
+  font-size: 16px;
+}
+
+/* Scan line overlay */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 200, 255, 0.015) 2px,
+    rgba(0, 200, 255, 0.015) 4px
+  );
+  pointer-events: none;
+  z-index: 999;
+}
+
+#particleBg {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.dashboard {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  gap: 10px;
+}
+
+/* === HEADER === */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Corner brackets */
+.header::before, .header::after {
+  content: '';
+  position: absolute;
+  width: 20px; height: 20px;
+  border-color: var(--accent);
+  border-style: solid;
+}
+.header::before {
+  top: 4px; left: 4px;
+  border-width: 2px 0 0 2px;
+}
+.header::after {
+  bottom: 4px; right: 4px;
+  border-width: 0 2px 2px 0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.logo {
+  font-size: 40px;
+  filter: drop-shadow(0 0 12px rgba(0, 200, 255, 0.6));
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+h1 {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--accent);
+  text-shadow: 0 0 20px rgba(0, 200, 255, 0.5), 0 0 40px rgba(0, 200, 255, 0.2);
+  letter-spacing: 4px;
+  text-transform: uppercase;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.gateway-status {
+  padding: 4px 14px;
+  border-radius: 2px;
+  font-size: 16px;
+  font-weight: 700;
+  background: rgba(0, 255, 136, 0.08);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  color: var(--green);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
+}
+
+.gateway-status.error {
+  background: rgba(255, 51, 102, 0.08);
+  border-color: rgba(255, 51, 102, 0.3);
+  color: var(--red);
+  text-shadow: 0 0 8px rgba(255, 51, 102, 0.5);
+}
+
+.stat-badge {
+  padding: 4px 10px;
+  border-radius: 2px;
+  background: rgba(0, 200, 255, 0.06);
+  border: 1px solid rgba(0, 200, 255, 0.15);
+  font-size: 16px;
+  font-weight: 700;
+  white-space: nowrap;
+  letter-spacing: 1px;
+}
+
+.clock {
+  color: var(--accent);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(0, 200, 255, 0.4);
+}
+
+/* === TOKEN BAR === */
+.token-badge {
+  background: rgba(255, 184, 0, 0.08) !important;
+  border-color: rgba(255, 184, 0, 0.3) !important;
+  color: var(--yellow) !important;
+  text-shadow: 0 0 8px rgba(255, 184, 0, 0.4);
+}
+
+.token-bar {
+  display: flex;
+  justify-content: center;
+  gap: 50px;
+  padding: 10px 28px;
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  position: relative;
+}
+
+.token-bar::before {
+  content: 'TOKEN CONSUMPTION';
+  position: absolute;
+  top: -8px;
+  left: 20px;
+  font-size: 12px;
+  letter-spacing: 3px;
+  color: var(--text-dim);
+  background: var(--bg);
+  padding: 0 8px;
+}
+
+.token-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.token-label {
+  font-size: 12px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.token-value {
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--yellow);
+  text-shadow: 0 0 15px rgba(255, 184, 0, 0.5);
+}
+
+.token-value.token-in {
+  color: var(--cyan);
+  text-shadow: 0 0 15px rgba(0, 229, 255, 0.5);
+}
+
+.token-value.token-out {
+  color: var(--purple);
+  text-shadow: 0 0 15px rgba(180, 74, 255, 0.5);
+}
+
+/* === MAIN LAYOUT === */
+.main-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Panel corner decorations */
+.panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 30px; height: 1px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+
+.panel::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 1px; height: 30px;
+  background: linear-gradient(180deg, var(--accent), transparent);
+}
+
+.panel-title {
+  padding: 10px 18px;
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--accent);
+  border-bottom: 1px solid var(--border);
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.panel-title::before {
+  content: '▸';
+  color: var(--green);
+  font-size: 15px;
+}
+
+/* === TOPOLOGY (main area) === */
+.center-panel {
+  position: relative;
+  min-height: 420px;
+  flex: 1;
+}
+
+#topoCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  min-height: 400px;
+}
+
+/* === BOTTOM ROW === */
+.bottom-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  max-height: 340px;
+}
+
+/* === AGENT CARDS === */
+.agent-cards {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.agent-card {
+  padding: 16px 18px;
+  border-radius: 2px;
+  background: rgba(0, 20, 40, 0.6);
+  border: 1px solid var(--border);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.agent-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px;
+  height: 100%;
+}
+
+.agent-card.active::before {
+  background: var(--green);
+  box-shadow: 0 0 12px var(--green), 0 0 24px rgba(0, 255, 136, 0.3);
+}
+.agent-card.idle::before { background: var(--yellow); box-shadow: 0 0 8px rgba(255, 184, 0, 0.3); }
+.agent-card.offline::before { background: var(--text-dim); }
+
+.agent-card.active {
+  border-color: rgba(0, 255, 136, 0.2);
+  background: rgba(0, 255, 136, 0.03);
+  animation: breathe 2s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { box-shadow: inset 0 0 0 rgba(0, 255, 136, 0); }
+  50% { box-shadow: inset 0 0 30px rgba(0, 255, 136, 0.05); }
+}
+
+.agent-name {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  word-break: break-all;
+  letter-spacing: 1px;
+}
+
+.agent-name .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.dot.active {
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green), 0 0 16px rgba(0, 255, 136, 0.4);
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+.dot.idle { background: var(--yellow); box-shadow: 0 0 6px rgba(255, 184, 0, 0.4); }
+.dot.offline { background: var(--text-dim); }
+
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+}
+
+.agent-meta {
+  font-size: 15px;
+  color: var(--text-dim);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  letter-spacing: 1px;
+}
+
+.agent-meta .channel-tag {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 2px;
+  font-size: 12px;
+  background: rgba(180, 74, 255, 0.1);
+  color: var(--purple);
+  border: 1px solid rgba(180, 74, 255, 0.2);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.agent-meta .tool-tag {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 2px;
+  font-size: 12px;
+  background: rgba(0, 200, 255, 0.1);
+  color: var(--accent);
+  border: 1px solid rgba(0, 200, 255, 0.2);
+}
+
+.agent-msg {
+  font-size: 15px;
+  color: var(--text-dim);
+  margin-top: 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+/* === FEED === */
+.feed-panel .live-feed {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 12px;
+}
+
+.feed-count {
+  font-size: 15px;
+  background: rgba(0, 200, 255, 0.1);
+  padding: 2px 8px;
+  border-radius: 2px;
+  margin-left: 8px;
+  font-weight: 700;
+}
+
+.feed-item {
+  padding: 7px 8px;
+  border-bottom: 1px solid rgba(0, 200, 255, 0.05);
+  font-size: 16px;
+  animation: slideIn 0.3s ease;
+  letter-spacing: 0.5px;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.feed-item .feed-time {
+  color: var(--text-dim);
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+.feed-item .feed-agent {
+  color: var(--cyan);
+  font-weight: 700;
+}
+
+.feed-item .feed-action {
+  color: var(--text);
+}
+
+/* === SCROLLBAR === */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0, 200, 255, 0.2); border-radius: 0; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* === RESPONSIVE === */
+@media (max-width: 700px) {
+  .bottom-row { grid-template-columns: 1fr; max-height: none; }
+  .header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  h1 { font-size: 16px; }
+  .logo { font-size: 26px; }
+  .token-bar { gap: 20px; padding: 10px 16px; }
+  .token-value { font-size: 16px; }
+}

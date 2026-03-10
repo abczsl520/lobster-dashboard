@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🦞 Lobster Command Center - Login</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0e17;
+      color: #e2e8f0;
+      font-family: 'SF Mono', monospace;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .login-box {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 16px;
+      padding: 40px;
+      width: 360px;
+      backdrop-filter: blur(12px);
+      text-align: center;
+    }
+    .logo { font-size: 48px; margin-bottom: 16px; }
+    h2 {
+      font-size: 18px;
+      background: linear-gradient(90deg, #38bdf8, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 24px;
+    }
+    input {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 8px;
+      color: #e2e8f0;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      margin-bottom: 16px;
+    }
+    input:focus { border-color: #38bdf8; }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(90deg, #38bdf8, #a855f7);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    button:hover { opacity: 0.9; }
+    .error { color: #ef4444; font-size: 12px; margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+  <form class="login-box" method="POST" action="login" id="loginForm">
+    <div class="logo">🦞</div>
+    <h2>Lobster Command Center</h2>
+    <div class="error" id="err" style="display:none">Wrong password, please try again</div>
+    <input type="password" name="password" placeholder="Enter password" autofocus>
+    <button type="submit">Enter</button>
+  </form>
+  <script>
+    if (location.search.includes('error=1')) document.getElementById('err').style.display = 'block';
+  </script>
+</body>
+</html>

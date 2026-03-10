@@ -1,0 +1,16 @@
+{
+  "name": "lobster-dashboard",
+  "version": "1.0.0",
+  "description": "Real-time cyberpunk dashboard for monitoring OpenClaw AI agent sessions",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "setup": "cp config.example.json config.json && echo 'Edit config.json with your settings'"
+  },
+  "keywords": ["openclaw", "dashboard", "ai-agents", "monitoring", "websocket", "cyberpunk"],
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.0",
+    "ws": "^8.16.0"
+  }
+}
