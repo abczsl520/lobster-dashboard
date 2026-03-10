@@ -76,16 +76,17 @@
     for (var i = 0; i < sessions.length; i++) {
       var s = sessions[i];
       var card = document.createElement('div');
-      card.className = 'agent-card ' + s.status;
+      var safeStatus = /^(active|idle|offline)$/.test(s.status) ? s.status : 'offline';
+      card.className = 'agent-card ' + safeStatus;
 
-      var channelLabel = s.channel === 'discord' ? '💬 Discord' : s.channel === 'telegram' ? '✈️ Telegram' : '📡 ' + s.channel;
-      var typeLabel = s.chatType === 'group' ? 'Group' : s.chatType === 'dm' ? 'DM' : s.chatType;
+      var channelLabel = s.channel === 'discord' ? '💬 Discord' : s.channel === 'telegram' ? '✈️ Telegram' : '📡 ' + esc(s.channel);
+      var typeLabel = s.chatType === 'group' ? 'Group' : s.chatType === 'dm' ? 'DM' : esc(s.chatType);
       var ageStr = formatAge(s.ageMs);
       var toolHtml = s.lastTool ? ' <span class="tool-tag">⚡' + esc(s.lastTool) + '</span>' : '';
       var tokenStr = s.tokens ? ' · ' + formatTokens(s.tokens) + ' tokens' : '';
 
       card.innerHTML =
-        '<div class="agent-name"><span class="dot ' + s.status + '"></span>' + esc(s.displayName) + '</div>' +
+        '<div class="agent-name"><span class="dot ' + safeStatus + '"></span>' + esc(s.displayName) + '</div>' +
         '<div class="agent-meta">' +
           '<div><span class="channel-tag">' + channelLabel + '</span> ' +
           '<span class="channel-tag">' + typeLabel + '</span>' + toolHtml + '</div>' +
@@ -108,7 +109,7 @@
       var channelIcon = item.channel === 'discord' ? '💬' : item.channel === 'telegram' ? '✈️' : '📡';
       html +=
         '<div class="feed-item">' +
-        '<span class="feed-time">' + item.time + '</span> ' +
+        '<span class="feed-time">' + esc(item.time) + '</span> ' +
         channelIcon + ' ' +
         '<span class="feed-agent">' + esc(item.agent) + '</span> ' +
         '<span class="feed-action" style="color:' + (colorMap[item.color] || '#e2e8f0') + '">' + esc(item.action) + '</span>' +
