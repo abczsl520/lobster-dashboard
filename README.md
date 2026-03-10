@@ -1,33 +1,78 @@
 # 🦞 Lobster Dashboard
 
-Real-time cyberpunk monitoring dashboard for [OpenClaw](https://github.com/openclaw/openclaw) AI agent sessions.
+> **Real-time cyberpunk monitoring dashboard for [OpenClaw](https://github.com/openclaw/openclaw) AI agent sessions**
 
-![Cyberpunk](https://img.shields.io/badge/style-cyberpunk-blueviolet) ![Node.js](https://img.shields.io/badge/node-%3E%3D18-green) ![License](https://img.shields.io/badge/license-MIT-blue)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D18-brightgreen)](https://nodejs.org/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![GitHub stars](https://img.shields.io/github/stars/abczsl520/lobster-dashboard?style=social)](https://github.com/abczsl520/lobster-dashboard/stargazers)
 
-## Features
+<p align="center">
+  <img src="https://img.shields.io/badge/style-cyberpunk-blueviolet" alt="Cyberpunk">
+  <img src="https://img.shields.io/badge/realtime-WebSocket-ff69b4" alt="WebSocket">
+  <img src="https://img.shields.io/badge/security-hardened-success" alt="Security">
+</p>
 
-- **Force-directed topology** — physics simulation with lobster emoji nodes
-- **Real-time WebSocket** — live state updates via push API
-- **Cyberpunk UI** — hex grid particles, scanning lines, glowing edges, data packets
-- **Token consumption** — per-session and aggregate token tracking
-- **Activity feed** — live log of agent status changes and tool usage
-- **Secure auth** — timing-safe password compare, login rate limiting, cookie auth with 24h expiry
-- **Push API** — external data ingestion with rate limiting and input validation
+---
 
-## Quick Start
+## ✨ Features
+
+🎨 **Cyberpunk Aesthetic**
+- Hex grid particle system with interactive mouse glow
+- Force-directed topology with physics simulation
+- Scanning lines, glowing edges, and data packet animations
+- Lobster emoji nodes 🦞
+
+⚡ **Real-time Monitoring**
+- Live WebSocket updates (sub-second latency)
+- Per-session and aggregate token tracking
+- Activity feed with status changes and tool usage
+- Auto-reconnect on connection loss
+
+🔒 **Security Hardened**
+- Timing-safe password comparison
+- Login rate limiting (5 attempts/min per IP)
+- Token set capped at 1000 to prevent memory exhaustion
+- XSS protection with input sanitization
+- HttpOnly + Secure cookies for HTTPS
+
+🚀 **Production Ready**
+- Push API with rate limiting and validation
+- Nginx reverse proxy support
+- Configurable base path for sub-directory deployment
+- Health check endpoint
+
+---
+
+## 🎬 Demo
+
+> **Coming soon** — Deploy it and see the cyberpunk magic yourself! 🦞✨
+
+---
+
+## 🚀 Quick Start
 
 ```bash
+# Clone the repository
 git clone https://github.com/abczsl520/lobster-dashboard.git
 cd lobster-dashboard
+
+# Install dependencies
 npm install
+
+# Setup configuration
 cp config.example.json config.json
 # Edit config.json with your password and push token
-node server.js
+
+# Start the server
+npm start
 ```
 
-Open `http://localhost:3870` and log in.
+Open `http://localhost:3870` and log in with your password.
 
-## Configuration
+---
+
+## ⚙️ Configuration
 
 Edit `config.json`:
 
@@ -45,15 +90,19 @@ Edit `config.json`:
 
 | Field | Description |
 |-------|-------------|
-| `port` | Server listen port |
-| `basePath` | URL prefix behind a reverse proxy (e.g. `/lobster`). Leave `""` for root. |
-| `gateway.mode` | Currently `push` only — data is pushed via the Push API |
+| `port` | Server listen port (default: 3870) |
+| `basePath` | URL prefix for reverse proxy (e.g. `/lobster`). Leave `""` for root. |
+| `gateway.mode` | Data ingestion mode (currently `push` only) |
 | `auth.pushToken` | Secret token for the Push API (`X-Push-Token` header) |
 | `auth.viewPassword` | Password for the web login page |
+| `https` | Set to `true` to enable secure cookies (optional) |
 
-For HTTPS environments, set `"https": true` in config or `LOBSTER_HTTPS=1` env var to enable secure cookies.
+**Environment Variables:**
+- `LOBSTER_HTTPS=1` — Enable secure cookies (alternative to config)
 
-## Push API
+---
+
+## 📡 Push API
 
 Send session data from your OpenClaw instance:
 
@@ -79,9 +128,9 @@ curl -X POST http://localhost:3870/api/push \
   }'
 ```
 
-### OpenClaw Pusher Example
+### OpenClaw Pusher Script
 
-A simple cron/launchd script to push OpenClaw session data:
+Create a cron/launchd script to push data every 5 seconds:
 
 ```bash
 #!/bin/bash
@@ -93,9 +142,32 @@ curl -s -X POST http://localhost:3870/api/push \
   -d "{\"sessions\": $SESSIONS}"
 ```
 
-## Nginx Reverse Proxy
+**macOS launchd example:**
 
-When deploying behind nginx with a sub-path, set `basePath` to match:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.lobster.pusher</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/path/to/pusher.sh</string>
+    </array>
+    <key>StartInterval</key>
+    <integer>5</integer>
+    <key>RunAtLoad</key>
+    <true/>
+</dict>
+</plist>
+```
+
+---
+
+## 🌐 Nginx Reverse Proxy
+
+Deploy behind nginx with a sub-path:
 
 ```nginx
 location /lobster/ {
@@ -104,13 +176,17 @@ location /lobster/ {
     proxy_set_header Upgrade $http_upgrade;
     proxy_set_header Connection "upgrade";
     proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_buffering off;
 }
 ```
 
-Then set `"basePath": "/lobster"` in config.json.
+Then set `"basePath": "/lobster"` in `config.json`.
 
-## Architecture
+---
+
+## 🏗️ Architecture
 
 ```
 server.js                  ← Express + auth + push API + rate limiting
@@ -126,15 +202,59 @@ public/
   js/particles.js          ← Hex grid particle background
 ```
 
-## Security
+**Tech Stack:**
+- Backend: Node.js + Express + WebSocket (ws)
+- Frontend: Vanilla JS + Canvas API
+- No build step, no frameworks — just pure web tech
 
-- Timing-safe password comparison (`crypto.timingSafeEqual`)
-- Login rate limiting (5 attempts per minute per IP)
-- Token set capped at 1000 to prevent memory exhaustion
-- Push API with dedicated token auth + rate limiting (1 req / 3s)
-- WebSocket upgrade requires valid auth token
-- HttpOnly cookies with optional Secure flag
+---
 
-## License
+## 🔒 Security
 
-MIT
+- **Timing-safe password comparison** (`crypto.timingSafeEqual`)
+- **Login rate limiting** (5 attempts per minute per IP)
+- **Token set capped** at 1000 to prevent memory exhaustion
+- **Push API rate limiting** (1 request per 3 seconds)
+- **XSS protection** with input sanitization (`esc()` function)
+- **WebSocket auth** requires valid token from cookie or query param
+- **HttpOnly cookies** with optional Secure flag for HTTPS
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+**Ideas for contributions:**
+- Add screenshot/demo GIF to README
+- Implement polling mode (alternative to push API)
+- Add Prometheus metrics endpoint
+- Create Docker image
+- Add dark/light theme toggle
+- Implement session filtering and search
+
+---
+
+## 📝 License
+
+MIT License - see [LICENSE](LICENSE) for details.
+
+---
+
+## 🌟 Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=abczsl520/lobster-dashboard&type=Date)](https://star-history.com/#abczsl520/lobster-dashboard&Date)
+
+---
+
+## 🙏 Acknowledgments
+
+Built for the [OpenClaw](https://github.com/openclaw/openclaw) community.
+
+Inspired by cyberpunk aesthetics and real-time monitoring dashboards.
+
+---
+
+<p align="center">
+  Made with 🦞 and ⚡ by the Lobster Dashboard contributors
+</p>
